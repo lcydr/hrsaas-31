@@ -78,6 +78,7 @@ export default {
       try {
         await this.$refs.loginForm.validate()
         await this.$store.dispatch('user/getToken', this.loginForm)
+        console.log(111)
         this.$router.push('/')
         this.$message.success('登录成功')
         console.log(1111)

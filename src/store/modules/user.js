@@ -1,5 +1,5 @@
 import {getUserInfoApi, login,getUserDetail} from '@/api/user.js'
-import setTokenTime from '@/utils/auth.js'
+import { setTokenTime } from '@/utils/auth.js'
 export default {
   namespaced: true,
   state: {
