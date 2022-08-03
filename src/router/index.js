@@ -172,6 +172,21 @@ const createRouter = () => new Router({
 
 const router = createRouter()
 
+// // l路由(全局)前置守卫
+// // 会在所有路由进入之前触发
+
+// router.beforeEach((to, from, next) => {
+//   console.log(to)
+//   // 进行权限控制
+//   // 调用了next 进入该路由，如果没有调用则无法进入
+//   if (to.path === '/login') {
+//     next()
+//   } else {
+//     next('/login')
+//   }
+// })
+
+
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
   const newRouter = createRouter()
@@ -179,3 +194,5 @@ export function resetRouter() {
 }
 
 export default router
+
+

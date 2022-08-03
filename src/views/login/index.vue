@@ -74,14 +74,15 @@ export default {
   },
   methods: {
     async login() {
+      // this.isLogin = true
       try {
         await this.$refs.loginForm.validate()
-        this.$store.dispatch('user/getToken', this.loginForm)
+        await this.$store.dispatch('user/getToken', this.loginForm)
         this.$router.push('/')
         this.$message.success('登录成功')
         console.log(1111)
       } catch (error) {
-        console.log(222)
+        // this.isLogin = false
       }
     }
   }
