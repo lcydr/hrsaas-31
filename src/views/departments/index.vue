@@ -1,17 +1,33 @@
 <template>
   <div class="dashboard-container">
     <div class="app-container">
-      <el-card class="box-card">
+      <el-card class="box-card" v-loading="loading">
         <!-- 头部 -->
-        <TreeTools :treeNode="company" :isRoot="true"></TreeTools>
+        <TreeTools
+          :treeNode="company"
+          :isRoot="true"
+          @add="dialogVisible = true"
+        ></TreeTools>
         <!-- 树形 -->
         <el-tree :data="treeData" :props="defaultProps" default-expand-all>
           <template v-slot="{ data }">
-            <TreeTools :treeNode="data"></TreeTools>
+            <TreeTools
+              :treeNode="data"
+              @remove="loadDepts"
+              @add="showAddDept"
+              @edit="showEdit"
+            ></TreeTools>
           </template>
         </el-tree>
       </el-card>
     </div>
+    <!-- 添加部门弹层 -->
+    <AddDept
+      ref="addDepts"
+      :visible.sync="dialogVisible"
+      :currentNode="currentNode"
+      @addDeps="addDeps"
+    ></AddDept>
   </div>
 </template>
 
@@ -19,6 +35,7 @@
 import TreeTools from './components/tree-tools.vue'
 import { getDeptsAPI } from '@/api/departments.js'
 import { transListToTree } from '@/utils/index'
+import AddDept from './components/add-dept.vue'
 export default {
   data() {
     return {
@@ -33,7 +50,10 @@ export default {
       company: {
         name: '传智教育',
         manager: '负责人'
-      }
+      },
+      dialogVisible: false,
+      currentNode: {},
+      loading: true
     }
   },
 
@@ -43,12 +63,27 @@ export default {
 
   methods: {
     async loadDepts() {
+      this.loading = true
       const res = await getDeptsAPI()
+      // console.log(res)
       this.treeData = transListToTree(res.depts, '')
+      this.loading = false
+    },
+    showAddDept(val) {
+      this.dialogVisible = true
+      this.currentNode = val
+    },
+    addDeps() {
+      this.loadDepts()
+    },
+    showEdit(val) {
+      this.dialogVisible = true
+      this.$refs.addDepts.getDeptById(val.id)
     }
   },
   components: {
-    TreeTools
+    TreeTools,
+    AddDept
   }
 }
 </script>
