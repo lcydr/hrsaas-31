@@ -3,7 +3,7 @@
     <el-form
       ref="loginForm"
       :model="loginForm"
-      :rules="loginRules"
+      :rules="loginFormRules"
       class="login-form"
       auto-complete="on"
       label-position="left"
@@ -36,7 +36,6 @@
       <div class="tips">
         <span style="margin-right: 20px">账号: 13800000002</span>
         <span> 密码: 123456</span>
-        >>>>>>> feature/layout
       </div>
     </el-form>
   </div>
