@@ -22,3 +22,11 @@ export function getUserDetail (id) {
     url:`/sys/user/${id}`
   })
 }
+
+export function UpdateUserInfo (id) {
+  return request({
+    url: `/sys/role/${id}`,
+    method:"PUT"
+    
+  })
+}
