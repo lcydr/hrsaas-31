@@ -37,7 +37,7 @@
 <script>
 import { getUserDetail, getUserDetailById } from '@/api/user'
 import UserInfo from '@/views/employees/components/user-info.vue'
-import Uploading from '@/components/Uploading/index.vue'
+import Uploading from './components/job-info.vue'
 export default {
   data() {
     return {

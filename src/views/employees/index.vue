@@ -37,6 +37,7 @@
                   padding: 10px;
                   border-radius: 50%;
                 "
+                @click="showErCodeDialog(row.staffPhoto)"
               />
             </template>
           </el-table-column>
@@ -49,7 +50,7 @@
           <el-table-column label="部门" sortable="" prop="departmentName" />
           <el-table-column label="入职时间" sortable="">
             <template slot-scope="{ row }">
-              {{ row.timeOfEntry | formatTime }}
+              {{ row.timeOfEntry | formatDate }}
             </template>
           </el-table-column>
           <el-table-column label="账户状态" sortable="" prop="enableState">
@@ -104,6 +105,11 @@
       :visible.sync="showAddEmployees"
       @add-success="getEmployeeList"
     ></add-employees>
+
+    <!-- 二维码弹窗 -->
+    <el-dialog title="提示" :visible.sync="ercodeDialog" width="30%">
+      <canvas id="canvas"></canvas>
+    </el-dialog>
   </div>
 </template>
 
@@ -112,11 +118,12 @@ import { getEmployeeInfoList, delEmployee } from '@/api/employees'
 import employess from '@/constant/employees.js'
 import AddEmployees from './components/add-employees.vue'
 const { exportExcelMapPath, hireType } = employess
-
+import QRCode from 'qrcode'
 export default {
   data() {
     return {
       employees: [],
+      ercodeDialog: false,
       total: 0,
       page: {
         page: 1,
@@ -182,6 +189,14 @@ export default {
         bookType: 'xlsx', //非必填
         multiHeader: [['手机号', '其他信息', '', '', '', '', '部门']],
         merges: ['A1:A2', 'B1:B2', 'G1:G2']
+      })
+    },
+    showErCodeDialog(staffPhoto) {
+      if (!staffPhoto) return this.$message.error('该用户还未设置')
+      this.ercodeDialog = true
+      this.$nextTick(() => {
+        const canvas = document.getElementById('canvas')
+        QRCode.toCanvas(canvas, staffPhoto)
       })
     }
   },

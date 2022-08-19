@@ -20,7 +20,9 @@ import *as directives from '@/directives'
 import components from '@/components'
 
 Vue.use(components)
-
+// 打印
+import Print from 'vue-print-nb'
+Vue.use(Print);
 // 过滤器封装
 import *as filters from '@/filters'
 /**
