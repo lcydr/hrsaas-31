@@ -1,9 +1,22 @@
 import PageTools from '@/components/PageTools'
-import UploadExcel from '@/components/uploadexcel'
-const components = [PageTools,UploadExcel]
+import MyTest from '@/components/MyTest'
+import UploadExcel from '@/components/UploadExcel'
+import UploadImg from '@/components/UploadImg'
+import Calendar from '@/components/calendar'
+import FullScreen from '@/components/FullScreen'
+import ToggleLang from '@/components/ToggleLang'
+const components = [
+  PageTools,
+  MyTest,
+  UploadExcel,
+  UploadImg,
+  Calendar,
+  FullScreen,
+  ToggleLang
+]
 export default {
-  install (Vue) {
-    components.forEach(component => {
+  install(Vue) {
+    components.forEach((component) => {
       Vue.component(component.name, component)
     })
   }

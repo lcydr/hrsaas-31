@@ -8,22 +8,24 @@
             size="small"
             type="warning"
             @click="$router.push('/import')"
+            v-isHas="point.employees.import"
             >导入</el-button
           >
           <el-button size="small" type="danger" @click="exportExcel"
             >导出</el-button
           >
           <el-button
+            v-if="isHas(point.employees)"
             size="small"
             type="primary"
-            @click="showAddEmployees = true"
+            @click="showAdd"
             >新增员工</el-button
           >
         </template>
       </page-tools>
       <!-- 放置表格和分页 -->
       <el-card>
-        <el-table border :data="employees">
+        <el-table :data="employees">
           <el-table-column label="序号" sortable="" type="index" />
           <el-table-column label="姓名" sortable="" prop="username" />
           <el-table-column label="员工">
@@ -32,28 +34,31 @@
                 v-imgError="require('@/assets/common/head.jpg')"
                 :src="row.staffPhoto"
                 style="
+                  border-radius: 50%;
                   width: 100px;
                   height: 100px;
                   padding: 10px;
-                  border-radius: 50%;
                 "
                 @click="showErCodeDialog(row.staffPhoto)"
               />
             </template>
           </el-table-column>
+          <el-table-column label="工号" sortable="" prop="workNumber" />
           <el-table-column
             label="聘用形式"
             sortable=""
+            :formatter="formatFormOfEmployment"
             prop="formOfEmployment"
-            :formatter="formOfEmployment"
-          />
+          >
+          </el-table-column>
           <el-table-column label="部门" sortable="" prop="departmentName" />
           <el-table-column label="入职时间" sortable="">
+            <!-- 为什么这个位置用过滤器,格式化时间不只局限于表格 此时建议使用过滤器 -->
             <template slot-scope="{ row }">
-              {{ row.timeOfEntry | formatDate }}
+              {{ row.timeOfEntry | formatTime }}
             </template>
           </el-table-column>
-          <el-table-column label="账户状态" sortable="" prop="enableState">
+          <el-table-column label="账户状态" sortable="">
             <template slot-scope="{ row }">
               <el-switch
                 :value="row.enableState === 1"
@@ -74,11 +79,24 @@
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
-              <el-button type="text" size="small">角色</el-button>
               <el-button
                 type="text"
                 size="small"
-                @click="deleteEmployee(row.id)"
+                @click="showAssignDialog(row.id)"
+                >角色</el-button
+              >
+              <el-button
+                v-if="isHas(point.employees.add)"
+                size="small"
+                type="primary"
+                @click="showAdd"
+                >新增员工</el-button
+              >
+              <el-button
+                type="text"
+                size="small"
+                @click="onRemove(row.id)"
+                v-if="isHas(point.employees.del)"
                 >删除</el-button
               >
             </template>
@@ -92,83 +110,101 @@
           style="height: 60px"
         >
           <el-pagination
-            layout="prev, pager, next"
+            :page-size="pages.size"
             :total="total"
-            @current-change="handleCurrentChange"
-            :page-size="page.size"
+            @current-change="currentChange"
+            layout="prev, pager, next"
           />
         </el-row>
       </el-card>
     </div>
-    <!-- 添加员工弹窗 -->
-    <add-employees
-      :visible.sync="showAddEmployees"
-      @add-success="getEmployeeList"
-    ></add-employees>
 
-    <!-- 二维码弹窗 -->
-    <el-dialog title="提示" :visible.sync="ercodeDialog" width="30%">
+    <!-- 添加员工组件 -->
+    <add-employees
+      @add-success="getEmployeesList"
+      :visible.sync="showAddEmployees"
+    />
+
+    <!-- 头像二维码 -->
+    <el-dialog title="头像二维码" :visible.sync="ercodeDialog">
       <canvas id="canvas"></canvas>
     </el-dialog>
+
+    <!-- 分配角色 -->
+    <assign-role
+      :employeesId="currentEmployeesId"
+      :visible.sync="showAssignRole"
+    />
   </div>
 </template>
 
 <script>
-import { getEmployeeInfoList, delEmployee } from '@/api/employees'
-import employess from '@/constant/employees.js'
+import { getEmployeesInfoApi, delEmployee } from '@/api/employees'
+import employees from '@/constant/employees'
 import AddEmployees from './components/add-employees.vue'
-const { exportExcelMapPath, hireType } = employess
-import QRCode from 'qrcode'
+import AssignRole from './components/assign-role.vue'
+import QRcode from 'qrcode'
+import MixinPermission from '@/mixins/permission'
+const { exportExcelMapPath, hireType } = employees
 export default {
+  name: 'Employees',
+  mixins: [MixinPermission],
   data() {
     return {
       employees: [],
-      ercodeDialog: false,
       total: 0,
-      page: {
+      pages: {
         page: 1,
-        size: 10
+        size: 5,
       },
-      showAddEmployees: false
+      showAddEmployees: false,
+      ercodeDialog: false,
+      showAssignRole: false,
+      currentEmployeesId: '',
     }
   },
+
   created() {
-    this.getEmployeeList()
+    this.getEmployeesList()
   },
+
+  components: {
+    AddEmployees,
+    AssignRole,
+  },
+
   methods: {
-    async getEmployeeList() {
-      const { rows, total } = await getEmployeeInfoList(this.page)
+    async getEmployeesList() {
+      const { rows, total } = await getEmployeesInfoApi(this.pages)
       this.employees = rows
       this.total = total
-      console.log(this.employees)
     },
-    handleCurrentChange(val) {
-      this.page.page = val
-      this.getEmployeeList()
+    currentChange(val) {
+      this.pages.page = val
+      this.getEmployeesList()
     },
-    formOfEmployment(row, column, cellValue, index) {
-      const findItem = employess.hireType.find((item) => item.id === cellValue)
+    formatFormOfEmployment(row, column, cellValue, index) {
+      const findItem = employees.hireType.find((item) => item.id === cellValue)
       return findItem ? findItem.value : '未知'
     },
-    // 删除员工
-    async deleteEmployee(id) {
-      try {
-        await this.$confirm('您确定删除该员工吗')
-        await delEmployee(id)
-        this.getEmployeeList()
-        this.$message.success('删除员工成功')
-      } catch (error) {
-        console.log(error)
-      }
+    async onRemove(id) {
+      await this.$confirm('是否删除该员工?')
+      await delEmployee(id)
+      this.$message.success('删除成功')
+      this.getEmployeesList()
+    },
+    showAdd() {
+      this.showAddEmployees = true
     },
     async exportExcel() {
       const { export_json_to_excel } = await import('@/vendor/Export2Excel')
-      const { rows } = await getEmployeeInfoList({
+      const { rows } = await getEmployeesInfoApi({
         page: 1,
-        size: this.total
+        size: this.total,
       })
+      // 表头数据 ['手机号', '姓名',...]
       const header = Object.keys(exportExcelMapPath)
-
+      // data数据
       const data = rows.map((item) => {
         return header.map((h) => {
           if (h === '聘用形式') {
@@ -184,25 +220,29 @@ export default {
       export_json_to_excel({
         header, //表头 必填
         data, //具体数据 必填
-        filename: 'excel-list', //非必填
+        filename: '员工列表', //非必填
         autoWidth: true, //非必填
         bookType: 'xlsx', //非必填
         multiHeader: [['手机号', '其他信息', '', '', '', '', '部门']],
-        merges: ['A1:A2', 'B1:B2', 'G1:G2']
+        merges: ['A1:A2', 'B1:F1', 'G1:G2'],
       })
     },
+    // 点击显示二维码弹层
     showErCodeDialog(staffPhoto) {
-      if (!staffPhoto) return this.$message.error('该用户还未设置')
+      if (!staffPhoto) return this.$message.error('该用户还未设置头像')
       this.ercodeDialog = true
+
       this.$nextTick(() => {
         const canvas = document.getElementById('canvas')
-        QRCode.toCanvas(canvas, staffPhoto)
+        QRcode.toCanvas(canvas, staffPhoto)
       })
-    }
+    },
+    // 点击角色显示分配角色弹层
+    showAssignDialog(id) {
+      this.showAssignRole = true
+      this.currentEmployeesId = id
+    },
   },
-  components: {
-    AddEmployees
-  }
 }
 </script>
 

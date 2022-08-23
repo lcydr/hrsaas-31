@@ -62,14 +62,16 @@
         <el-col :span="12">
           <el-form-item label="员工头像">
             <!-- 放置上传图片 -->
-            <Uploading ref="Img" @onSuccess="headerImg"></Uploading>
+            <upload-img ref="headerImg" @onSuccess="headerImgSuccess" />
           </el-form-item>
         </el-col>
       </el-row>
       <!-- 保存个人信息 -->
       <el-row class="inline-info" type="flex" justify="center">
         <el-col :span="12">
-          <el-button type="primary" @click="updata">保存更新</el-button>
+          <el-button type="primary" @click="onSaveUserDetail"
+            >保存更新</el-button
+          >
           <el-button @click="$router.back()">返回</el-button>
         </el-col>
       </el-row>
@@ -96,6 +98,7 @@
 
         <el-form-item label="员工照片">
           <!-- 放置上传图片 -->
+          <upload-img ref="employeesPic" @onSuccess="employeesPicSuccess" />
         </el-form-item>
         <el-form-item label="国家/地区">
           <el-select v-model="formData.nationalArea" class="inputW2">
@@ -381,7 +384,9 @@
         <!-- 保存员工信息 -->
         <el-row class="inline-info" type="flex" justify="center">
           <el-col :span="12">
-            <el-button type="primary">保存更新</el-button>
+            <el-button type="primary" @click="onSaveEmployeesInfo"
+              >保存更新</el-button
+            >
             <el-button @click="$router.back()">返回</el-button>
           </el-col>
         </el-row>
@@ -392,11 +397,9 @@
 
 <script>
 import EmployeeEnum from '@/constant/employees'
-import { getUserDetail, UpdateUserInfo } from '@/api/user'
-// import { updatePersonal } from '@/api/employees'
-import Uploading from '@/components/Uploading/index.vue'
+import { getUserDetail, saveUserDetailById } from '@/api/user.js'
+import { getPersonalDetail, updatePersonal } from '@/api/employees.js'
 
-import { getPersonalDetail } from '@/api/employees.js'
 export default {
   data() {
     return {
@@ -464,41 +467,51 @@ export default {
         resume: '', // 简历
         isThereAnyCompetitionRestriction: '', // 有无竞业限制
         proofOfDepartureOfFormerCompany: '', // 前公司离职证明
-        remarks: '' // 备注
-      }
+        remarks: '', // 备注
+      },
     }
   },
   created() {
-    this.getUserDetail()
+    this.loadUserDetail()
+    this.loadEmployeesInfo()
   },
   methods: {
-    // 获取个人详情上面表单数据
-    async getUserDetail() {
+    async loadUserDetail() {
       this.userInfo = await getUserDetail(this.userId)
-      this.$refs.Img.fileList.push({
-        url: this.userInfo.staffPhoto
+      this.$refs.headerImg.fileList.push({
+        url: this.userInfo.staffPhoto,
       })
     },
-    // 更新用户
-    async updata() {
-      await UpdateUserInfo(this.userId)
+    async loadEmployeesInfo() {
+      this.formData = await getPersonalDetail(this.userId)
+      this.$refs.employeesPic.fileList.push({
+        url: this.formData.staffPhoto,
+      })
+    },
+    async onSaveUserDetail() {
+      if (this.$refs.headerImg.loading) {
+        return this.$message.error('头像正在上传中')
+      }
+      await saveUserDetailById(this.userInfo)
+
       this.$message.success('更新成功')
     },
-    headerImg({ url }) {
+    async onSaveEmployeesInfo() {
+      if (this.$refs.employeesPic.loading) {
+        return this.$message.error('头像正在上传中')
+      }
+      await updatePersonal(this.formData)
+      this.$message.success('更新成功')
+    },
+    // 监听员工头像上传成功
+    headerImgSuccess({ url }) {
       this.userInfo.staffPhoto = url
-    }
-    // async loadUserDetail () {
-    //   this.$refs.headerImg.fileList.push({
-    //     url:this.userInfo.staffPhoto
-    //   })
-    // this.$refs.employeesPic.fileList.push({
-    //   url:this.formData.staffPhoto
-    // })
-    // }
+    },
+    // 监听员工照片上传成功
+    employeesPicSuccess({ url }) {
+      this.formData.staffPhoto = url
+    },
   },
-  components: {
-    Uploading
-  }
 }
 </script>
 

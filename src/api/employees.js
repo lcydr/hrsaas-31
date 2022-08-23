@@ -1,22 +1,24 @@
 import request from '@/utils/request'
 
 /**
- * 
- * @returns 获取员工列表 （简单）
+ * 获取员工列表(简单)
+ * @returns promise
  */
-export function getEmployeesApi () {
+export function getEmployeesApi() {
   return request({
-    url:'/sys/user/simple'
+    url: '/sys/user/simple',
   })
 }
 
 /**
- * 获取员工的综合列表数据
- * ***/
-export function getEmployeeInfoList(params) {
+ * 获取员工列表
+ * @param {*} params {page, size}
+ * @returns
+ */
+export function getEmployeesInfoApi(params) {
   return request({
     url: '/sys/user',
-    params
+    params,
   })
 }
 
@@ -27,7 +29,7 @@ export function getEmployeeInfoList(params) {
 export function delEmployee(id) {
   return request({
     url: `/sys/user/${id}`,
-    method: 'delete'
+    method: 'delete',
   })
 }
 
@@ -38,43 +40,18 @@ export function addEmployee(data) {
   return request({
     method: 'post',
     url: '/sys/user',
-    data
+    data,
   })
 }
-
-/** **
- *  新增员工的接口
- * **/
-export function addEmployees(data) {
-  return request({
-    method: 'post',
-    url: '/sys/user',
-    data
-  })
-}
-
 /**
- * 
- * @param {*} data 批量导入 员工数组
- * @returns 
+ * 批量导入员工
+ * @param {*} data 员工数组
  */
-export function importEmployess (data) {
+export function importEmployees(data) {
   return request({
     method: 'post',
-    url: '/sys/user/batch', 
-    data
-  })
-}
-
-/** *
- *
- * 保存员工的基本信息
- * **/
-export function saveUserDetailById(data) {
-  return request({
-    url: `/sys/user/${data.id}`,
-    method: 'put',
-    data
+    url: '/sys/user/batch',
+    data,
   })
 }
 
@@ -83,7 +60,7 @@ export function saveUserDetailById(data) {
  * **/
 export function getPersonalDetail(id) {
   return request({
-    url: `/employees/${id}/personalInfo`
+    url: `/employees/${id}/personalInfo`,
   })
 }
 
@@ -95,5 +72,16 @@ export function updatePersonal(data) {
     url: `/employees/${data.userId}/personalInfo`,
     method: 'put',
     data,
+  })
+}
+
+/** *
+ * 给用户分配角色
+ * ***/
+export function assignRoles(data) {
+  return request({
+    url: '/sys/user/assignRoles',
+    data,
+    method: 'put',
   })
 }

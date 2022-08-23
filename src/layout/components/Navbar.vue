@@ -1,18 +1,21 @@
 <template>
   <div class="navbar">
+    {{ $t('message.hello') }}
     <hamburger
       :is-active="sidebar.opened"
       class="hamburger-container"
       @toggleClick="toggleSideBar"
     />
 
+    <!-- <breadcrumb class="breadcrumb-container" /> -->
     <div class="app-breadcrumb">
-      {{ $store.state.user.userInfo.company }}
+      {{ $store.state.user.userInfo.companyName }}
       <span class="breadBtn">体验版</span>
     </div>
-    <!-- <breadcrumb class="breadcrumb-container" /> -->
 
     <div class="right-menu">
+      <ToggleLang />
+      <FullScreen />
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <img
@@ -25,7 +28,7 @@
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <router-link to="/">
-            <el-dropdown-item>Home</el-dropdown-item>
+            <el-dropdown-item> Home </el-dropdown-item>
           </router-link>
           <el-dropdown-item divided @click.native="logout">
             <span style="display: block">Log Out</span>
@@ -41,7 +44,9 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import defaultImg from '@/assets/common/head.jpg'
+
 export default {
+  // 如果想在data中定义本地图片路径,需要先引入
   data() {
     return {
       defaultImg
@@ -68,12 +73,30 @@ export default {
 
 <style lang="scss" scoped>
 .navbar {
-  height: 60px;
+  height: 50px;
   overflow: hidden;
   position: relative;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   background-image: -webkit-linear-gradient(left, #3d6df8, #5b8cff);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+
+  .app-breadcrumb {
+    display: inline-block;
+    font-size: 18px;
+    line-height: 50px;
+    margin-left: 10px;
+    color: #ffffff;
+    cursor: text;
+    .breadBtn {
+      background: #84a9fe;
+      font-size: 14px;
+      padding: 0 10px;
+      display: inline-block;
+      height: 30px;
+      line-height: 30px;
+      border-radius: 10px;
+      margin-left: 15px;
+    }
+  }
 
   .hamburger-container {
     line-height: 46px;
@@ -82,8 +105,9 @@ export default {
     cursor: pointer;
     transition: background 0.3s;
     -webkit-tap-highlight-color: transparent;
+    color: #fff;
     fill: currentColor;
-    color: #ffffff;
+
     &:hover {
       background: rgba(0, 0, 0, 0.025);
     }
@@ -94,6 +118,7 @@ export default {
   }
 
   .right-menu {
+    display: flex;
     float: right;
     height: 100%;
     line-height: 50px;
@@ -125,14 +150,15 @@ export default {
 
       .avatar-wrapper {
         position: relative;
-        // margin-top: 5px;
-        // 开启flex
         display: flex;
         align-items: center;
         color: #fff;
+        cursor: pointer;
+
         span {
           margin: 0 3px;
         }
+
         .user-avatar {
           cursor: pointer;
           width: 40px;
@@ -144,29 +170,10 @@ export default {
           cursor: pointer;
           position: absolute;
           right: -20px;
-          // top: 25px;
           font-size: 12px;
         }
       }
     }
-  }
-}
-.app-breadcrumb {
-  display: inline-block;
-  font-size: 18px;
-  line-height: 50px;
-  margin-left: 10px;
-  color: #ffffff;
-  cursor: text;
-  .breadBtn {
-    background: #84a9fe;
-    font-size: 14px;
-    padding: 0 10px;
-    display: inline-block;
-    height: 30px;
-    line-height: 30px;
-    border-radius: 10px;
-    margin-left: 15px;
   }
 }
 </style>

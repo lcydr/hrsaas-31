@@ -2,15 +2,15 @@
   <div class="dashboard-container">
     <div class="app-container">
       <el-card>
-        <el-tabs>
-          <el-tab-pane label="登录账户设置">
+        <el-tabs v-model="activeName" @tab-click="handleTabClick">
+          <el-tab-pane name="account" label="登录账户设置">
             <!-- 放置表单 -->
             <el-form
               label-width="120px"
               style="margin-left: 120px; margin-top: 30px"
             >
               <el-form-item label="姓名:">
-                <el-input v-model="formData.mobile" style="width: 300px" />
+                <el-input v-model="formData.username" style="width: 300px" />
               </el-form-item>
               <el-form-item label="密码:">
                 <el-input
@@ -20,14 +20,16 @@
                 />
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click.native="onSave"
-                  >更新</el-button
-                >
+                <el-button type="primary" @click="onSave">更新</el-button>
               </el-form-item>
             </el-form>
           </el-tab-pane>
-          <el-tab-pane label="个人详情"><UserInfo></UserInfo></el-tab-pane>
-          <el-tab-pane label="岗位信息"><Uploading></Uploading></el-tab-pane>
+          <el-tab-pane name="user" label="个人详情">
+            <user-info />
+          </el-tab-pane>
+          <el-tab-pane name="job" label="岗位信息">
+            <JobInfo />
+          </el-tab-pane>
         </el-tabs>
       </el-card>
     </div>
@@ -35,37 +37,49 @@
 </template>
 
 <script>
-import { getUserDetail, getUserDetailById } from '@/api/user'
-import UserInfo from '@/views/employees/components/user-info.vue'
-import Uploading from './components/job-info.vue'
+import { getUserDetail, saveUserDetailById } from '@/api/user.js'
+import UserInfo from './components/user-info.vue'
+import JobInfo from './components/job-info.vue'
+import Cookies from 'js-cookie'
 export default {
   data() {
     return {
-      formData: {}
-      // activeName: Cookies.get('employeeDetailTab') || 'account'
+      formData: {},
+      activeName: Cookies.get('employeeDetailTab') || 'account',
     }
+  },
+  // 路由开启props,此时可以接收路由参数
+  props: {
+    id: {
+      required: true,
+      type: String,
+    },
+  },
+
+  components: {
+    UserInfo,
+    JobInfo,
   },
 
   created() {
-    this.getUserDetail()
+    this.loadUserDetail()
+    // console.log(this.$attrs)
   },
 
   methods: {
-    async getUserDetail() {
+    async loadUserDetail() {
       const res = await getUserDetail(this.$route.params.id)
-      console.log(res)
       this.formData = res
     },
     async onSave() {
-      await getUserDetailById(this.formData)
+      await saveUserDetailById(this.formData)
       this.$message.success('更新成功')
-    }
+    },
+    handleTabClick() {
+      Cookies.set('employeeDetailTab', this.activeName)
+    },
   },
-  components: {
-    UserInfo,
-    Uploading
-  }
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="less"></style>

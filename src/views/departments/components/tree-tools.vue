@@ -1,5 +1,5 @@
 <template>
-  <el-row type="flex" style="width: 100%">
+  <el-row style="width: 100%" type="flex">
     <el-col>{{ treeNode.name }}</el-col>
     <el-col :span="5">
       <el-row type="flex">
@@ -9,15 +9,14 @@
             <span class="el-dropdown-link">
               操作<i class="el-icon-arrow-down el-icon--right"></i>
             </span>
-
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item @click.native="$emit('add', treeNode)"
                 >添加部门</el-dropdown-item
               >
               <template v-if="!isRoot">
-                <el-dropdown-item @click.native="$emit('edit', treeNode)">
-                  编辑部门
-                </el-dropdown-item>
+                <el-dropdown-item @click.native="$emit('edit', treeNode)"
+                  >编辑部门</el-dropdown-item
+                >
                 <el-dropdown-item @click.native="onRemove"
                   >删除部门</el-dropdown-item
                 >
@@ -31,20 +30,22 @@
 </template>
 
 <script>
-import { delDeptsAPI } from '@/api/departments.js'
+import { delDeptsApi } from '@/api/departments'
 export default {
+  name: 'TreeTools',
   data() {
     return {}
   },
+
   props: {
     treeNode: {
       type: Object,
-      required: true
+      required: true,
     },
     isRoot: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
 
   created() {},
@@ -52,18 +53,18 @@ export default {
   methods: {
     async onRemove() {
       try {
-        await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
+        await this.$confirm('此操作将永久删除该部门, 是否继续?', '提示', {
+          confirmButtonText: '删除',
           cancelButtonText: '取消',
-          type: 'warning'
+          type: 'warning',
         })
-        await delDeptsAPI(this.treeNode.id)
+        await delDeptsApi(this.treeNode.id)
         this.$message.success('删除成功')
         this.$emit('remove')
-      } catch (error) {}
-    }
-  }
+      } catch (err) {}
+    },
+  },
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="less"></style>

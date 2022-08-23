@@ -1,19 +1,16 @@
 <template>
   <div class="dashboard-container">
     <div class="app-container">
-      <upload-excel
-        :beforeUpload="UploadSuccess"
-        :onSuccess="onSuccess"
-      ></upload-excel>
+      <upload-excel :beforeUpload="excelSuccess" :onSuccess="onSuccess" />
     </div>
   </div>
 </template>
 
 <script>
-import employees from '@/constant/employees.js'
-const { importMapKeyPath } = employees
-import { importEmployess } from '@/api/employees.js'
+import employees from '@/constant/employees'
+import { importEmployees } from '@/api/employees'
 import { formatTime } from '@/filters'
+const { importMapKeyPath } = employees
 export default {
   data() {
     return {}
@@ -22,13 +19,15 @@ export default {
   created() {},
 
   methods: {
-    UploadSuccess({ name }) {
+    // 上传前的处理
+    excelSuccess({ name }) {
       if (!name.endsWith('.xlsx')) {
-        this.$message.error('请上传.xlsx文件')
+        this.$message.error('请选择xlsx文件')
         return false
       }
       return true
     },
+    // 上传成功
     async onSuccess({ header, results }) {
       const newArr = results.map((item) => {
         const obj = {}
@@ -37,20 +36,21 @@ export default {
             // excel 时间戳
             const timestamp = item[key]
             // 转换
-            const data = new Date((timestamp - 1) * 24 * 3600000)
-            data.setFullYear(data.getFullYear() - 70)
-            obj[importMapKeyPath[key]] = formatTime(data)
+            const date = new Date((timestamp - 1) * 24 * 3600000)
+            date.setFullYear(date.getFullYear() - 70)
+            obj[importMapKeyPath[key]] = formatTime(date)
+          } else {
+            obj[importMapKeyPath[key]] = item[key]
           }
-          obj[importMapKeyPath[key]] = item[key]
         }
         return obj
       })
-      await importEmployess(newArr)
+      await importEmployees(newArr)
       this.$message.success('导入成功')
       this.$router.go(-1)
-    }
-  }
+    },
+  },
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="less"></style>
